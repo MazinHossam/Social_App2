@@ -1,0 +1,7 @@
+node_modules
+dist/
+.env
+.env.*
+coverage/
+*.log
+socialmedia-a7578-firebase-adminsdk-fbsvc-0727dfe211.json
