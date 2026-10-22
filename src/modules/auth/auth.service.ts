@@ -58,7 +58,6 @@ class AuthService{
         body: `You have successfully logged in ${new Date()}`
     }
 });
-        // token, { title: "User Logged In", body: `You have successfully logged in ${new Date()}.` }
     }
     const { accessToken, refreshtoken } = this._tokenService.generateToken(user);
 return { accessToken, refreshtoken }

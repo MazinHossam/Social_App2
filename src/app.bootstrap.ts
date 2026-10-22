@@ -9,7 +9,7 @@ import connectDB from './DB/DB.connection'
 import { connectRedies } from './DB/DB.Repository'
 import userController from './modules/user/user.controller'
 import cors from 'cors'
-import NotificationService from './common/utils/Notification/Notification.service'
+// import NotificationService from './common/utils/Notification/Notification.service'
 import postController from './modules/post/post.controller'
 
 
@@ -39,21 +39,21 @@ app.use("/user",userController)
 app.use("/post",postController)
 app.use(globalErrorHandler)
 
-app.post("/SendNotification", async (req, res) => {
-    try {
-        const { token, title, body } = req.body;
+// app.post("/SendNotification", async (req, res) => {
+//     try {
+//         const { token, title, body } = req.body;
 
-        await NotificationService.sendNotification(token, title, body);
+//         await NotificationService.sendNotification(token, title, body);
 
-        res.json({
-            message: "Notification Sent"
-        });
+//         res.json({
+//             message: "Notification Sent"
+//         });
  
-    } catch (err) {
-        console.error(err);
-        res.status(500).json(err);
-    }
-});
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json(err);
+//     }
+// });
 
 app.get("/*dummy",(req,res,next)=>{
 res.status(404).json("invalid page errorrrrrrrr")

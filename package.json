@@ -2,10 +2,12 @@
   "name": "social_media_app_2",
   "version": "1.0.0",
   "main": "main.js",
-  "scripts": {
-    "start:dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/main.js\"",
-    "start:prod": "cross-env NODE_ENV=production concurrently \"tsc --watch\" \"node --watch dist/main.js\""
-  },
+ "scripts": {
+  "build": "tsc",
+  "start": "node dist/main.js",
+  "start:dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/main.js\"",
+  "start:prod": "cross-env NODE_ENV=production concurrently \"tsc --watch\" \"node --watch dist/main.js\""
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

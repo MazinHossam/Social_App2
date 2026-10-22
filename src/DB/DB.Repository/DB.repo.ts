@@ -1,4 +1,4 @@
-import { Filter } from 'firebase-admin/firestore';
+
 import { AnyKeys, CreateOptions, HydratedDocument, Model, MongooseUpdateQueryOptions, ProjectionType, QueryFilter, QueryOptions, Types, UpdateQuery, UpdateWithAggregationPipeline } from "mongoose";
 import type { UpdateOptions as MongoUpdateOptions } from 'mongodb'
 

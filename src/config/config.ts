@@ -1,7 +1,8 @@
 import  { resolve } from 'node:path';
 import { config } from "dotenv";
 config({path:resolve(`./.env.${process.env.NODE_ENV}`)})
-export const PORT=process.env.PORT
+export const PORT = process.env.PORT || 3000;
+
 export const DB_URI=process.env.DB_URI as string
 export const REDIS_URI=process.env.REDIS_URI as string
 export const SALT_ROUND=parseInt(process.env.SALT_ROUND ?? '10')

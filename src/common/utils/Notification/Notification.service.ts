@@ -5,13 +5,13 @@ import { initializeApp, cert, App } from "firebase-admin/app";
 import { getMessaging } from 'firebase-admin/messaging';
 class NotificationService{
 
-private _serviceAccount = JSON.parse(readFileSync(path.resolve("./socialmedia-a7578-firebase-adminsdk-fbsvc-0727dfe211.json"))as unknown as string );
+private _serviceAccount = JSON.parse(readFileSync(path.resolve("./socialmedia-a7578-firebase-adminsdk-fbsvc-607768c0d5.json"))as unknown as string );
 
 private _client: App;
 constructor(){
   this._client = initializeApp({
-    credential: cert(this._serviceAccount)
-});
+    credential: cert(this._serviceAccount) 
+}); 
 
 
 }
@@ -46,4 +46,4 @@ async sendNotifications({
     console.log(res);
 }
 } 
-export default new NotificationService()
+export default new NotificationService() 
