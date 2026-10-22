@@ -2,12 +2,12 @@
   "name": "social_media_app_2",
   "version": "1.0.0",
   "main": "main.js",
- "scripts": {
-  "build": "tsc",
-  "start": "node dist/main.js",
-  "start:dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/main.js\"",
-  "start:prod": "cross-env NODE_ENV=production concurrently \"tsc --watch\" \"node --watch dist/main.js\""
-},
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "start:dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/main.js\"",
+    "start:prod": "cross-env NODE_ENV=production concurrently \"tsc --watch\" \"node --watch dist/main.js\""
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,11 +17,11 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.2.0",
+    "@types/multer": "^2.3.0",
     "@types/node": "^25.6.0",
-    "@types/nodemailer": "^8.0.0",
+    "@types/nodemailer": "^8.0.2",
     "concurrently": "^9.2.1",
-    "nodemailer": "^8.0.7"
+    "nodemailer": "^8.0.11"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
