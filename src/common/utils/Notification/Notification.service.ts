@@ -1,49 +1,70 @@
+import {
+  initializeApp,
+  cert,
+  type App,
+  type ServiceAccount,
+} from "firebase-admin/app";
 
-import { readFileSync } from 'fs';
-import path from 'path';
-import { initializeApp, cert, App } from "firebase-admin/app";
-import { getMessaging } from 'firebase-admin/messaging';
-class NotificationService{
+import { getMessaging } from "firebase-admin/messaging";
 
-private _serviceAccount = JSON.parse(readFileSync(path.resolve("./socialmedia-a7578-firebase-adminsdk-fbsvc-607768c0d5.json"))as unknown as string );
+class NotificationService {
+  private _client: App;
 
-private _client: App;
-constructor(){
-  this._client = initializeApp({
-    credential: cert(this._serviceAccount) 
-}); 
+  constructor() {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
+    if (!projectId || !clientEmail || !privateKey) {
+      throw new Error(
+        "Missing Firebase environment variables"
+      );
+    }
 
-}
+    const serviceAccount: ServiceAccount = {
+      projectId,
+      clientEmail,
+privateKey: privateKey.replace(/\\n/g, "\n"),
+    };
 
+    this._client = initializeApp({
+      credential: cert(serviceAccount),
+    });
+  }
 
-async sendNotification(token: string,title: string,body: string) {
+  async sendNotification(
+    token: string,
+    title: string,
+    body: string
+  ) {
     const res = await getMessaging(this._client).send({
-        token,
-        notification: {
-            title,
-            body,
-        },
+      token,
+      notification: {
+        title,
+        body,
+      },
     });
 
     console.log(res);
-}
-async sendNotifications({
+  }
+
+  async sendNotifications({
     tokens,
     notification,
-}: {
+  }: {
     tokens: string[];
     notification: {
-        title: string;
-        body: string;
+      title: string;
+      body: string;
     };
-}) {
+  }) {
     const res = await getMessaging(this._client).sendEachForMulticast({
-        tokens,
-        notification,
+      tokens,
+      notification,
     });
 
     console.log(res);
+  }
 }
-} 
-export default new NotificationService() 
+
+export default new NotificationService();
