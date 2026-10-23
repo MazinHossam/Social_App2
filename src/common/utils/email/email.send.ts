@@ -1,42 +1,54 @@
-import nodemailer from 'nodemailer'
-import { APP_EMAIL_PASSWORD, EMAIL_APP } from '../../../config/config';
-import Mail from 'nodemailer/lib/mailer';
 
+import nodemailer from "nodemailer";
+import type Mail from "nodemailer/lib/mailer";
+import { APP_EMAIL_PASSWORD, EMAIL_APP } from "../../../config/config";
 
-export const SendEmail =async({
-    to,
-    cc,
-    bcc,
-    subject, 
-    html,
-    attachments=[]
-    
-}:Mail.Options)=>{
+export const SendEmail = async ({
+  to,
+  cc,
+  bcc,
+  subject,
+  html,
+  attachments = [],
+}: Mail.Options) => {
+  try {
+    console.log("EMAIL FUNCTION STARTED");
+
     const transporter = nodemailer.createTransport({
- service:'gmail',
-  auth: {
-    user: EMAIL_APP,
-    pass: APP_EMAIL_PASSWORD,
-  },
-});
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      family: 4,
+      auth: {
+        user: EMAIL_APP,
+        pass: APP_EMAIL_PASSWORD,
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+    });
 
+    console.log("CONNECTING TO GMAIL SMTP...");
 
-  const info = await transporter.sendMail({
+    await transporter.verify();
 
-     to,
-     cc,
-     bcc,
-     subject,
-     html,
-     from: `"Chat_App" <${EMAIL_APP}>`,
+    console.log("GMAIL SMTP CONNECTION SUCCESSFUL");
 
-    
-  });
+    const info = await transporter.sendMail({
+      from: `"Chat_App" <${EMAIL_APP}>`,
+      to,
+      cc,
+      bcc,
+      subject,
+      html,
+      attachments,
+    });
 
-  console.log("Message sent: %s", info.messageId);
-  // Preview URL is only available when using an Ethereal test account
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log("EMAIL SENT SUCCESSFULLY:", info.messageId);
 
-
-
-}
+    return info;
+  } catch (error) {
+    console.error("EMAIL SENDING FAILED:", error);
+    throw error;
+  }
+};

@@ -2,3 +2,4 @@
 .env.*
 !.env.example
 socialmedia-a7578-firebase-adminsdk-fbsvc-607768c0d5.json
+node_modules

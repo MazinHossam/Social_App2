@@ -63,17 +63,52 @@ class AuthService{
 return { accessToken, refreshtoken }
     }
 
-    public async signup(data:SignupDto):Promise<any>{
-        const userExist=await this._userRepository.findOne({ filter: { email: data.email } })
-        if(userExist) throw new ConfilectException("User already exists")
+    // public async signup(data:SignupDto):Promise<any>{
+    //     const userExist=await this._userRepository.findOne({ filter: { email: data.email } })
+    //     if(userExist) throw new ConfilectException("User already exists")
 
         
-        const user=await this._userRepository.createOne({ data:data  })
+    //     const user=await this._userRepository.createOne({ data:data  })
    
      
  
-        return user
+    //     return user
+    // }
+
+
+public async signup(data: SignupDto): Promise<any> {
+    try {
+        console.log("SIGNUP 1: Started");
+
+        const userExist = await this._userRepository.findOne({
+            filter: { email: data.email }
+        });
+
+        console.log("SIGNUP 2: User lookup completed");
+
+        if (userExist) {
+            throw new ConfilectException("User already exists");
+        }
+
+        const user = await this._userRepository.createOne({
+            data: {
+                ...data,
+                confirmEmail: true
+            }
+        });
+
+        console.log("SIGNUP 3: User created successfully");
+
+        return user;
+    } catch (error) {
+        console.error("SIGNUP ERROR:", error);
+        throw error;
     }
+}
+
+
+
+    
 
     public async confirmedEmail(bodyData:confirmEmailDto) {
     const { email, OTP } = bodyData
