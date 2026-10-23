@@ -1,6 +1,7 @@
 
 import nodemailer from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import { APP_EMAIL_PASSWORD, EMAIL_APP } from "../../../config/config";
 
 export const SendEmail = async ({
@@ -26,7 +27,7 @@ export const SendEmail = async ({
       connectionTimeout: 15000,
       greetingTimeout: 15000,
       socketTimeout: 20000,
-    });
+    } as SMTPTransport.Options);
 
     console.log("CONNECTING TO GMAIL SMTP...");
 
@@ -52,3 +53,5 @@ export const SendEmail = async ({
     throw error;
   }
 };
+
+
