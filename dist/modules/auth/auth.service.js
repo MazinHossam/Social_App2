@@ -21,11 +21,16 @@ class AuthService {
     _notificationService = Notification_service_1.default;
     async login(bodyData) {
         const { email, password } = bodyData;
-        const user = await this._userRepository.findOne({ filter: { email } });
+        const user = await this._userRepository.findOne({
+            filter: { email }
+        });
         if (!user) {
             throw new exceptions_1.NotFoundException("invalid info");
         }
-        const ispasswordvalid = await (0, security_1.generateCompare)({ plainText: password, hashedText: user.password });
+        const ispasswordvalid = await (0, security_1.generateCompare)({
+            plainText: password,
+            hashedText: user.password
+        });
         if (!ispasswordvalid) {
             throw new exceptions_1.NotFoundException("invalid info");
         }
@@ -47,67 +52,114 @@ class AuthService {
         return { accessToken, refreshtoken };
     }
     async signup(data) {
-        try {
-            console.log("SIGNUP 1: Started");
-            const userExist = await this._userRepository.findOne({
-                filter: { email: data.email }
-            });
-            console.log("SIGNUP 2: User lookup completed");
-            if (userExist) {
-                throw new exceptions_1.ConfilectException("User already exists");
+        console.log("SIGNUP: Started");
+        const userExist = await this._userRepository.findOne({
+            filter: { email: data.email }
+        });
+        if (userExist) {
+            throw new exceptions_1.ConfilectException("User already exists");
+        }
+        const user = await this._userRepository.createOne({
+            data: {
+                ...data,
+                password: await (0, security_1.generateHash)({
+                    plainText: data.password
+                }),
+                confirmEmail: false
             }
-            const user = await this._userRepository.createOne({
-                data: {
-                    ...data,
-                    confirmEmail: true
-                }
-            });
-            console.log("SIGNUP 3: User created successfully");
-            return user;
-        }
-        catch (error) {
-            console.error("SIGNUP ERROR:", error);
-            throw error;
-        }
+        });
+        console.log("SIGNUP: User created:", user.email);
+        console.log("SIGNUP: Sending confirmation OTP...");
+        await this._emailsevice.sendEmailOTP({
+            email: user.email,
+            emailType: email_enums_1.EmailTypeEnum.confirmEmail,
+            subject: "Verify Your Email"
+        });
+        console.log("SIGNUP: Confirmation email request completed");
+        return {
+            message: "Account created. Please check your email for the verification code.",
+            email: user.email
+        };
     }
     async confirmedEmail(bodyData) {
         const { email, OTP } = bodyData;
-        const user = await this._userRepository.findOne({ filter: { email } });
+        const user = await this._userRepository.findOne({
+            filter: { email }
+        });
         if (!user) {
             throw new exceptions_1.NotFoundException("invalid info");
         }
         if (user.confirmEmail) {
             throw new exceptions_1.BadRequestException("Email already confirmed");
         }
-        const OTPstore = await this._redisMethod.get(this._redisMethod.getOTPkey({ email, emailType: email_enums_1.EmailTypeEnum.confirmEmail }));
+        const OTPkey = this._redisMethod.getOTPkey({
+            email,
+            emailType: email_enums_1.EmailTypeEnum.confirmEmail
+        });
+        const OTPstore = await this._redisMethod.get(OTPkey);
         if (!OTPstore) {
             throw new exceptions_1.NotFoundException("invalid OTP");
         }
-        console.log("OTP from user:", OTP);
-        console.log("OTP from redis:", OTPstore);
-        const compareOTP = await (0, security_1.generateCompare)({ plainText: OTP, hashedText: OTPstore });
+        const compareOTP = await (0, security_1.generateCompare)({
+            plainText: OTP,
+            hashedText: OTPstore
+        });
         if (!compareOTP) {
             throw new exceptions_1.NotFoundException("OTP is not match");
         }
         user.confirmEmail = true;
         await user.save();
-        return { message: "Email confirmed successfully" };
+        return {
+            message: "Email confirmed successfully"
+        };
     }
     async ResendconfirmedEmail(email) {
-        await this._emailsevice.sendEmailOTP({ email, emailType: email_enums_1.EmailTypeEnum.confirmEmail, subject: "Verify Your Email" });
+        const user = await this._userRepository.findOne({
+            filter: { email }
+        });
+        if (!user) {
+            throw new exceptions_1.NotFoundException("User not found");
+        }
+        if (user.confirmEmail) {
+            throw new exceptions_1.BadRequestException("Email already confirmed");
+        }
+        await this._emailsevice.sendEmailOTP({
+            email,
+            emailType: email_enums_1.EmailTypeEnum.confirmEmail,
+            subject: "Verify Your Email"
+        });
+        return {
+            message: "Verification email sent successfully"
+        };
     }
     async sendOTPforgetPassword(email) {
-        const user = await this._userRepository.findOne({ filter: { email } });
+        const user = await this._userRepository.findOne({
+            filter: { email }
+        });
         if (!user) {
             return;
         }
         if (!user.confirmEmail) {
             throw new exceptions_1.BadRequestException("You must confirm your email before resetting your password");
         }
-        await this._emailsevice.sendEmailOTP({ email, emailType: email_enums_1.EmailTypeEnum.forgetPassword, subject: "Reset Your Password" });
+        await this._emailsevice.sendEmailOTP({
+            email,
+            emailType: email_enums_1.EmailTypeEnum.forgetPassword,
+            subject: "Reset Your Password"
+        });
+        return {
+            message: "Password reset OTP sent successfully"
+        };
     }
     async ResendForgetPasswordEmail(email) {
-        await this._emailsevice.sendEmailOTP({ email, emailType: email_enums_1.EmailTypeEnum.forgetPassword, subject: "Reset Your Password" });
+        await this._emailsevice.sendEmailOTP({
+            email,
+            emailType: email_enums_1.EmailTypeEnum.forgetPassword,
+            subject: "Reset Your Password"
+        });
+        return {
+            message: "Password reset OTP sent successfully"
+        };
     }
     async verifyOTPforgetPassword(bodyData) {
         const { email, OTP } = bodyData;
@@ -126,21 +178,29 @@ class AuthService {
         if (!compareOTP) {
             throw new exceptions_1.NotFoundException("OTP is not match");
         }
-        return { message: "password reset successfully" };
+        return {
+            message: "password reset successfully"
+        };
     }
     async resetPassword(bodyData) {
         const { email, password, OTP } = bodyData;
         await this.verifyOTPforgetPassword({ email, OTP });
         await this._userRepository.updateOne({
             filter: { email },
-            update: { password: await (0, security_1.generateHash)({ plainText: password }) }
+            update: {
+                password: await (0, security_1.generateHash)({
+                    plainText: password
+                })
+            }
         });
-        return;
+        return {
+            message: "Password reset successfully"
+        };
     }
     async verifyIdToken(idToken) {
         const client = new google_auth_library_1.OAuth2Client();
         const ticket = await client.verifyIdToken({
-            idToken: idToken,
+            idToken,
             audience: '623784589660-go8pk1hqu6j7autdvekil6fatkkj740d.apps.googleusercontent.com'
         });
         return ticket.getPayload();
@@ -163,7 +223,10 @@ class AuthService {
             if (user.provider !== enums_1.ProviderEnum.GOOGLE) {
                 throw new exceptions_1.ConfilectException("User already exists");
             }
-            return { status: 200, result: await this.loginwithGmail(idToken) };
+            return {
+                status: 200,
+                result: await this.loginwithGmail(idToken)
+            };
         }
         const newUser = await this._userRepository.createOne({
             data: {
@@ -174,7 +237,10 @@ class AuthService {
                 confirmEmail: true
             }
         });
-        return { status: 201, result: await this._tokenService.generateToken(newUser) };
+        return {
+            status: 201,
+            result: await this._tokenService.generateToken(newUser)
+        };
     }
     async loginwithGmail(idToken) {
         const payload = await this.verifyIdToken(idToken);
@@ -184,7 +250,12 @@ class AuthService {
         if (!payload.email_verified) {
             throw new exceptions_1.BadRequestException("email is not verified");
         }
-        const user = await this._userRepository.findOne({ filter: { email: payload.email, provider: enums_1.ProviderEnum.GOOGLE } });
+        const user = await this._userRepository.findOne({
+            filter: {
+                email: payload.email,
+                provider: enums_1.ProviderEnum.GOOGLE
+            }
+        });
         console.log(user);
         return this._tokenService.generateToken(user);
     }
