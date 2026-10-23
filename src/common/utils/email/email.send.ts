@@ -1,4 +1,4 @@
-
+import dns from "node:dns/promises";
 import nodemailer from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
@@ -14,7 +14,8 @@ export const SendEmail = async ({
 }: Mail.Options) => {
   try {
     console.log("EMAIL FUNCTION STARTED");
-
+const addresses = await dns.resolve4("smtp.gmail.com");
+console.log("GMAIL IPV4 ADDRESSES:", addresses);
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
