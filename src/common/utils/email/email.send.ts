@@ -1,58 +1,35 @@
-import dns from "node:dns/promises";
 import nodemailer from "nodemailer";
-import type Mail from "nodemailer/lib/mailer";
-import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import dns from "node:dns/promises";
 import { APP_EMAIL_PASSWORD, EMAIL_APP } from "../../../config/config";
 
-export const SendEmail = async ({
-  to,
-  cc,
-  bcc,
-  subject,
-  html,
-  attachments = [],
-}: Mail.Options) => {
-  try {
-    console.log("EMAIL FUNCTION STARTED");
-const addresses = await dns.resolve4("smtp.gmail.com");
-console.log("GMAIL IPV4 ADDRESSES:", addresses);
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      family: 4,
-      auth: {
-        user: EMAIL_APP,
-        pass: APP_EMAIL_PASSWORD,
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
-    } as SMTPTransport.Options);
+export const SendEmail = async (options: any) => {
+  const addresses = await dns.resolve4("smtp.gmail.com");
+  const gmailIPv4 = addresses[0];
 
-    console.log("CONNECTING TO GMAIL SMTP...");
+  console.log("Gmail IPv4:", gmailIPv4);
 
-    await transporter.verify();
+  const transporter = nodemailer.createTransport({
+    host: gmailIPv4,
+    port: 587,
+    secure: false,
+    auth: {
+      user: EMAIL_APP,
+      pass: APP_EMAIL_PASSWORD,
+    },
+    tls: {
+      servername: "smtp.gmail.com",
+    },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
+  });
 
-    console.log("GMAIL SMTP CONNECTION SUCCESSFUL");
+  const info = await transporter.sendMail({
+    ...options,
+    from: `"Chat_App" <${EMAIL_APP}>`,
+  });
 
-    const info = await transporter.sendMail({
-      from: `"Chat_App" <${EMAIL_APP}>`,
-      to,
-      cc,
-      bcc,
-      subject,
-      html,
-      attachments,
-    });
+  console.log("Email sent:", info.messageId);
 
-    console.log("EMAIL SENT SUCCESSFULLY:", info.messageId);
-
-    return info;
-  } catch (error) {
-    console.error("EMAIL SENDING FAILED:", error);
-    throw error;
-  }
+  return info;
 };
-
-
